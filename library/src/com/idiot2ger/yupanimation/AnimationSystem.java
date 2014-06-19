@@ -105,6 +105,7 @@ class AnimationSystem implements IAnimationSystem {
   @Override
   public void updateAnimationState(IAnimation<?> animation, State state) {
     // send message
+    //up state
     Message message = mStateHandler.obtainMessage(MSG_UPDATE_STATE, state.ordinal(), animation.getAnimationId());
     message.setTarget(mStateHandler);
     message.sendToTarget();

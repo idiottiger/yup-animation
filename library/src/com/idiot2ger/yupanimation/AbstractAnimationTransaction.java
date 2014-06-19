@@ -15,9 +15,13 @@ abstract class AbstractAnimationTransaction implements IAnimationTransaction, An
 
   protected int mRepeatTimes, mTimes;
 
+  private boolean mIsStarted;
+
   protected AbstractAnimationTransaction() {
     mAnimations.clear();
     mRunningAnimations.clear();
+
+    mIsStarted = false;
   }
 
   public void addAnimation(Animation<?> animation) {
@@ -30,7 +34,8 @@ abstract class AbstractAnimationTransaction implements IAnimationTransaction, An
 
   @Override
   public void start() {
-    if (!mAnimations.isEmpty()) {
+    if (!mAnimations.isEmpty() && !mIsStarted) {
+      mIsStarted = true;
       resetAll();
       initStartRunningAnimations();
       for (Animation<?> animation : mRunningAnimations) {
@@ -58,6 +63,7 @@ abstract class AbstractAnimationTransaction implements IAnimationTransaction, An
     for (Animation<?> animation : mRunningAnimations) {
       animation.stop();
     }
+    mIsStarted = false;
   }
 
   @Override
@@ -67,11 +73,13 @@ abstract class AbstractAnimationTransaction implements IAnimationTransaction, An
       animation.removeStateChangeCallback(this);
     }
     mAnimations.clear();
+    mIsStarted = false;
   }
 
   @Override
   public void reset() {
     resetAll();
+    mIsStarted = false;
   }
 
   @Override
