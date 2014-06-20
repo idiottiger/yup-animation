@@ -1,92 +1,112 @@
 package pkg.animtest;
 
 
+import java.util.ArrayList;
+import java.util.List;
+
 import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ListView;
 import android.widget.TextView;
 
-import com.idiot2ger.yupanimation.AnimationCallback;
-import com.idiot2ger.yupanimation.AnimationUtils;
-import com.idiot2ger.yupanimation.IAnimationTransaction;
-
-public class MainActivity extends Activity {
+public class MainActivity extends Activity implements OnItemClickListener {
 
 
-  private SinewaveAnimation mMoveAnimation;
-  private RotateAnimation mRotateAnimation;
-  private SinewaveAnimation mAlphaAnimation;
-  private TextView mTextView;
-  private float mPosY;
+  private ListView mListView;
+  private DemoAdapter mAdapter;
 
-  private IAnimationTransaction mTransaction;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-    setContentView(pkg.animtest.R.layout.activity_main);
+    setContentView(R.layout.activity_main);
 
-    mTextView = (TextView) findViewById(R.id.tv1);
+    mListView = (ListView) findViewById(R.id.demoListView);
+    mAdapter = new DemoAdapter(this);
+    mListView.setAdapter(mAdapter);
 
-    mMoveAnimation = new SinewaveAnimation(300);
-    mMoveAnimation.setDuration(3000);
-    mMoveAnimation.setRepeatTimes(2);
-    // mAnimation.setLoop(true);
+    mListView.setOnItemClickListener(this);
+    mAdapter.initAdapter();
+  }
 
-    mRotateAnimation = new RotateAnimation();
-    mRotateAnimation.setStartValue(0.f);
-    mRotateAnimation.setEndValue(-360.0f);
-    mRotateAnimation.setDuration(3000);
-    mRotateAnimation.setRepeatTimes(2);
+  @Override
+  public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+    DemoAdapterItem item = mAdapter.getItem(position);
+    Intent intent = new Intent(this, item.cls);
+    startActivity(intent);
+  }
 
-    mAlphaAnimation = new SinewaveAnimation(1.0f);
-    mAlphaAnimation.setDuration(300);
-    mAlphaAnimation.setRepeatTimes(2);
-
-
-    mPosY = 400;
-
-    mTextView.setY(mPosY);
-    mMoveAnimation.addCallback(new AnimationCallback<Float>() {
-      @Override
-      public void onAnimationUpdate(float fraction, Float value) {
-        mTextView.setY(mPosY + value);
-      }
-    });
-
-
-    mRotateAnimation.addCallback(new AnimationCallback<Float>() {
-
-      @Override
-      public void onAnimationUpdate(float fraction, Float value) {
-        mTextView.setRotation(value);
-      }
-    });
-
-    mAlphaAnimation.addCallback(new AnimationCallback<Float>() {
-
-      @Override
-      public void onAnimationUpdate(float fraction, Float value) {
-        mTextView.setAlpha(value);
-      }
-    });
-
-    mTransaction = AnimationUtils.newParallelAnimations(mMoveAnimation, mRotateAnimation);
-    mTransaction.setRepeatTimes(3);
+  @Override
+  protected void onDestroy() {
+    super.onDestroy();
+    mListView.setAdapter(null);
   }
 
 
-  public void processOnClick(View view) {
-    final int id = view.getId();
-    if (id == R.id.startBtn) {
-      mTransaction.start();
-    } else if (id == R.id.stopBtn) {
-      mTransaction.stop();
-    } else if (id == R.id.pauseBtn) {
-      mTransaction.pause();
-    } else if (id == R.id.resumeBtn) {
-      mTransaction.resume();
+  private class DemoAdapterItem {
+    String alias;
+    Class<?> cls;
+
+    public DemoAdapterItem(String alias, Class<?> cls) {
+      this.alias = alias;
+      this.cls = cls;
     }
   }
+
+  private class DemoAdapterViewHolder {
+    TextView textView;
+  }
+
+  private class DemoAdapter extends SimpleBetterAdapter<DemoAdapterItem, DemoAdapterViewHolder> {
+
+    private List<DemoAdapterItem> mItems = new ArrayList<DemoAdapterItem>();
+
+    public DemoAdapter(Context context) {
+      super(context, R.layout.list_item);
+      mItems.clear();
+    }
+
+    public void initAdapter() {
+      mItems.clear();
+      mItems.add(new DemoAdapterItem("Animation Transaction Demo", AnimationTransactionActivity.class));
+      mItems.add(new DemoAdapterItem("Custom View Demo", CustomViewActivity.class));
+    }
+
+    @Override
+    public int getCount() {
+      return mItems.size();
+    }
+
+    @Override
+    public long getItemId(int position) {
+      return 0;
+    }
+
+    @Override
+    public DemoAdapterItem getItem(int position) {
+      return mItems.get(position);
+    }
+
+    @Override
+    protected void updateView(int position, DemoAdapterViewHolder holder) {
+      holder.textView.setText(getItem(position).alias);
+    }
+
+    @Override
+    protected DemoAdapterViewHolder getViewHolder(View convertView) {
+      DemoAdapterViewHolder holder = new DemoAdapterViewHolder();
+      holder.textView = (TextView) convertView.findViewById(R.id.listItemTextView);
+      return holder;
+    }
+
+
+  }
+
+
 
 }
