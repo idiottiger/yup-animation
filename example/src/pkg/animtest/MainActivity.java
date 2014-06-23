@@ -32,6 +32,7 @@ public class MainActivity extends Activity implements OnItemClickListener {
 
     mListView.setOnItemClickListener(this);
     mAdapter.initAdapter();
+
   }
 
   @Override
